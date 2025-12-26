@@ -20,8 +20,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
-  const login = async (email: string, password: string) => {
-    // 데모: 아무 이메일/비밀번호나 입력하면 로그인됨
+  const login = async (email: string, _password: string) => {
     await new Promise((resolve) => setTimeout(resolve, 500));
     setUser({
       id: "demo-user",
@@ -31,8 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return true;
   };
 
-  const signup = async (name: string, email: string, password: string) => {
-    // 데모: 회원가입 후 자동 로그인
+  const signup = async (name: string, email: string, _password: string) => {
     await new Promise((resolve) => setTimeout(resolve, 500));
     setUser({
       id: "demo-user",

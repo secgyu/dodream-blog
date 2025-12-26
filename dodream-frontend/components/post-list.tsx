@@ -4,25 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { CategorySidebar } from "./category-sidebar";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { posts } from "@/lib/posts";
-
-interface Post {
-  slug: string;
-  title: string;
-  excerpt: string;
-  date: string;
-  author: string;
-  category: string;
-  subCategory: string; // 웹/앱 등 서브카테고리 추가
-  tags: string[];
-}
-
-const subCategories: Record<string, string[]> = {
-  프론트엔드: ["웹", "앱"],
-  백엔드: ["서버", "DB"],
-};
-
-const POSTS_PER_PAGE = 5;
+import { SUB_CATEGORIES, POSTS_PER_PAGE } from "@/lib/constants";
 
 export function PostList() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,18 +49,15 @@ export function PostList() {
     setCurrentPage(1);
   };
 
-  const currentSubCategories = activeCategory ? subCategories[activeCategory] || [] : [];
+  const currentSubCategories = activeCategory ? SUB_CATEGORIES[activeCategory] || [] : [];
 
   return (
     <div className="flex gap-12">
-      {/* 왼쪽 사이드바 */}
       <div className="hidden md:block w-32 shrink-0">
         <CategorySidebar activeCategory={activeCategory} onCategoryChange={handleCategoryChange} />
       </div>
 
-      {/* 오른쪽 글 목록 */}
       <div className="flex-1 min-w-0">
-        {/* 모바일용 카테고리 셀렉트 */}
         <div className="mb-6 md:hidden">
           <select
             value={activeCategory || ""}
@@ -93,7 +75,7 @@ export function PostList() {
           <div className="mb-6 flex items-center gap-4 border-b border-border">
             <button
               onClick={() => handleSubCategoryChange(null)}
-              className={`pb-2 text-sm transition-colors border-b-2 -mb-[1px] ${
+              className={`pb-2 text-sm transition-colors border-b-2 -mb-px ${
                 activeSubCategory === null
                   ? "border-foreground text-foreground font-medium"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -105,7 +87,7 @@ export function PostList() {
               <button
                 key={sub}
                 onClick={() => handleSubCategoryChange(sub)}
-                className={`pb-2 text-sm transition-colors border-b-2 -mb-[1px] ${
+                className={`pb-2 text-sm transition-colors border-b-2 -mb-px ${
                   activeSubCategory === sub
                     ? "border-foreground text-foreground font-medium"
                     : "border-transparent text-muted-foreground hover:text-foreground"
@@ -120,17 +102,13 @@ export function PostList() {
         {activeTag && (
           <div className="mb-6 flex items-center gap-3">
             <span className="text-sm text-muted-foreground">태그:</span>
-            <button
-              onClick={clearTagFilter}
-              className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-sm text-foreground transition-colors hover:bg-foreground/5"
-            >
+            <Badge variant="outline" className="gap-1 cursor-pointer" onClick={clearTagFilter}>
               #{activeTag}
-              <X className="h-3.5 w-3.5" />
-            </button>
+              <X className="h-3 w-3" />
+            </Badge>
           </div>
         )}
 
-        {/* 포스트 목록 */}
         <div className="divide-y divide-border">
           {currentPosts.map((post) => (
             <article key={post.slug} className="py-8 first:pt-0">
@@ -148,7 +126,6 @@ export function PostList() {
 
               <p className="mb-4 leading-relaxed text-muted-foreground line-clamp-2">{post.excerpt}</p>
 
-              {/* 세부 기술 태그 */}
               <div className="flex flex-wrap gap-2">
                 {post.tags.map((tag) => (
                   <button
@@ -170,42 +147,40 @@ export function PostList() {
           <p className="py-12 text-center text-muted-foreground">해당하는 글이 없습니다.</p>
         )}
 
-        {/* 페이지네이션 */}
         {totalPages > 1 && (
           <nav className="mt-12 flex items-center justify-center gap-2">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="p-2 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30 disabled:hover:text-muted-foreground"
               aria-label="이전 페이지"
             >
               <ChevronLeft className="h-5 w-5" />
-            </button>
+            </Button>
 
             <div className="flex items-center gap-1">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
+                <Button
                   key={page}
+                  variant={currentPage === page ? "default" : "ghost"}
+                  size="sm"
                   onClick={() => setCurrentPage(page)}
-                  className={`min-w-[2rem] px-2 py-1 text-sm transition-colors ${
-                    currentPage === page
-                      ? "font-medium text-foreground underline underline-offset-4"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
                 >
                   {page}
-                </button>
+                </Button>
               ))}
             </div>
 
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="p-2 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30 disabled:hover:text-muted-foreground"
               aria-label="다음 페이지"
             >
               <ChevronRight className="h-5 w-5" />
-            </button>
+            </Button>
           </nav>
         )}
       </div>

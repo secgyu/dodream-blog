@@ -1,12 +1,13 @@
 "use client";
 
-import type React from "react";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { BlogHeader } from "@/components/blog-header";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function SignupPage() {
   const [name, setName] = useState("");
@@ -48,77 +49,61 @@ export default function SignupPage() {
         <h1 className="text-2xl font-medium text-foreground mb-8 text-center">회원가입</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+          {error && <p className="text-sm text-destructive text-center">{error}</p>}
 
-          <div>
-            <label htmlFor="name" className="block text-sm text-muted-foreground mb-2">
-              이름
-            </label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="name">이름</Label>
+            <Input
               type="text"
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-4 py-3 border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
               placeholder="홍길동"
             />
           </div>
 
-          <div>
-            <label htmlFor="email" className="block text-sm text-muted-foreground mb-2">
-              이메일
-            </label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="email">이메일</Label>
+            <Input
               type="email"
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
               placeholder="example@email.com"
             />
           </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm text-muted-foreground mb-2">
-              비밀번호
-            </label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="password">비밀번호</Label>
+            <Input
               type="password"
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full px-4 py-3 border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
               placeholder="••••••••"
             />
           </div>
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm text-muted-foreground mb-2">
-              비밀번호 확인
-            </label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">비밀번호 확인</Label>
+            <Input
               type="password"
               id="confirmPassword"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full px-4 py-3 border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
               placeholder="••••••••"
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-3 bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors disabled:opacity-50"
-          >
+          <Button type="submit" disabled={isLoading} className="w-full">
             {isLoading ? "가입 중..." : "회원가입"}
-          </button>
+          </Button>
         </form>
 
         <p className="mt-8 text-center text-sm text-muted-foreground">

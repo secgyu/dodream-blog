@@ -1,13 +1,11 @@
 import type React from "react";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Newsreader } from "next/font/google";
+import { Geist } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { AuthProvider } from "@/lib/auth-context";
 import "./globals.css";
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
-const _newsreader = Newsreader({ subsets: ["latin"], variable: "--font-serif" });
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
 
 export const metadata: Metadata = {
   title: "Do x Dream | 두드림 Tech Blog",
@@ -39,7 +37,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className={`font-sans antialiased`}>
+      <body className={`${geist.variable} font-sans antialiased`}>
         <AuthProvider>{children}</AuthProvider>
         <Analytics />
       </body>

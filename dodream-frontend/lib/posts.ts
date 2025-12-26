@@ -1,14 +1,4 @@
-export interface Post {
-  slug: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  date: string;
-  author: string;
-  category: string;
-  subCategory: string;
-  tags: string[];
-}
+import type { Post } from "./types";
 
 export const posts: Post[] = [
   {
@@ -456,7 +446,8 @@ OpenAPI(Swagger)로 문서를 자동 생성하고, 코드와 문서가 항상 �
   {
     slug: "react-native-journey",
     title: "React Native로 앱 개발 시작하기",
-    excerpt: "웹 개발자가 모바일 앱 개발에 도전한 이야기. React Native의 장단점과 실제 프로덕션 경험을 공유합니다.",
+    excerpt:
+      "웹 개발자가 모바일 앱 개발에 도전한 이야기. React Native의 장단점과 실제 프로덕션 경험을 공유합니다.",
     content: `
 웹 개발자로 5년을 일하다가 처음으로 모바일 앱을 개발하게 되었습니다.
 
@@ -526,7 +517,8 @@ React Native는 웹 개발자가 모바일에 입문하기에 좋은 선택입�
   {
     slug: "flutter-vs-react-native",
     title: "Flutter와 React Native 비교 분석",
-    excerpt: "두 프레임워크를 실제 프로젝트에 적용해본 경험을 바탕으로 장단점을 비교합니다.",
+    excerpt:
+      "두 프레임워크를 실제 프로젝트에 적용해본 경험을 바탕으로 장단점을 비교합니다.",
     content: `
 같은 앱을 Flutter와 React Native로 각각 만들어보았습니다.
 
@@ -589,7 +581,8 @@ React Native는 웹 개발자가 모바일에 입문하기에 좋은 선택입�
   {
     slug: "database-optimization",
     title: "데이터베이스 쿼리 최적화 가이드",
-    excerpt: "대용량 트래픽 환경에서 DB 성능을 개선한 경험과 실전 팁을 공유합니다.",
+    excerpt:
+      "대용량 트래픽 환경에서 DB 성능을 개선한 경험과 실전 팁을 공유합니다.",
     content: `
 MAU 100만 서비스에서 DB 성능 문제를 해결한 경험을 공유합니다.
 
@@ -685,3 +678,4 @@ export function getAllCategories(): string[] {
   });
   return Array.from(categorySet);
 }
+

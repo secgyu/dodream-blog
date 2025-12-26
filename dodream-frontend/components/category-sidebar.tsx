@@ -1,11 +1,11 @@
 "use client";
 
+import { CATEGORIES } from "@/lib/constants";
+
 interface CategorySidebarProps {
   activeCategory: string | null;
   onCategoryChange: (category: string | null) => void;
 }
-
-const categories = ["프론트엔드", "백엔드", "회고"];
 
 export function CategorySidebar({ activeCategory, onCategoryChange }: CategorySidebarProps) {
   return (
@@ -19,7 +19,7 @@ export function CategorySidebar({ activeCategory, onCategoryChange }: CategorySi
         >
           전체
         </button>
-        {categories.map((category) => (
+        {CATEGORIES.map((category) => (
           <button
             key={category}
             onClick={() => onCategoryChange(category)}
