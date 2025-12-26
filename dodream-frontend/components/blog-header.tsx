@@ -40,12 +40,12 @@ export function BlogHeader() {
                 About
               </Link>
             </li>
-            {user ? (
+            {user && (
               <>
                 <li>
                   <Link
                     href="/write"
-                    className="text-sm text-muted-foreground transition-colors hover:text-foreground hover:underline underline-offset-4"
+                    className="text-sm text-primary font-medium transition-colors hover:text-primary/80 hover:underline underline-offset-4"
                   >
                     글쓰기
                   </Link>
@@ -59,15 +59,6 @@ export function BlogHeader() {
                   </button>
                 </li>
               </>
-            ) : (
-              <li>
-                <Link
-                  href="/login"
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground hover:underline underline-offset-4"
-                >
-                  로그인
-                </Link>
-              </li>
             )}
           </ul>
         </nav>

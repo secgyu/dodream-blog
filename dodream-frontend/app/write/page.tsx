@@ -36,7 +36,7 @@ export default function WritePage() {
 
   useEffect(() => {
     if (!user) {
-      router.push("/login");
+      router.push("/admin");
     }
   }, [user, router]);
 

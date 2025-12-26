@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Search } from "lucide-react";
 import { CategorySidebar } from "./category-sidebar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { posts } from "@/lib/posts";
 import { SUB_CATEGORIES, POSTS_PER_PAGE } from "@/lib/constants";
 
@@ -14,8 +15,21 @@ export function PostList() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [activeSubCategory, setActiveSubCategory] = useState<string | null>(null);
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const filteredPosts = posts.filter((post) => {
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchTitle = post.title.toLowerCase().includes(query);
+      const matchExcerpt = post.excerpt.toLowerCase().includes(query);
+      const matchContent = post.content.toLowerCase().includes(query);
+      const matchTags = post.tags.some((tag) => tag.toLowerCase().includes(query));
+      const matchAuthor = post.author.toLowerCase().includes(query);
+      if (!matchTitle && !matchExcerpt && !matchContent && !matchTags && !matchAuthor) {
+        return false;
+      }
+    }
+
     if (activeCategory && post.category !== activeCategory) return false;
     if (activeSubCategory && post.subCategory !== activeSubCategory) return false;
     if (activeTag && !post.tags.includes(activeTag)) return false;
@@ -58,6 +72,28 @@ export function PostList() {
       </div>
 
       <div className="flex-1 min-w-0">
+        <div className="mb-6 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="제목, 내용, 태그로 검색..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="pl-10"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
         <div className="mb-6 md:hidden">
           <select
             value={activeCategory || ""}
@@ -99,13 +135,19 @@ export function PostList() {
           </div>
         )}
 
-        {activeTag && (
-          <div className="mb-6 flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">태그:</span>
-            <Badge variant="outline" className="gap-1 cursor-pointer" onClick={clearTagFilter}>
-              #{activeTag}
-              <X className="h-3 w-3" />
-            </Badge>
+        {(activeTag || searchQuery) && (
+          <div className="mb-6 flex items-center gap-3 flex-wrap">
+            {searchQuery && (
+              <span className="text-sm text-muted-foreground">
+                &quot;{searchQuery}&quot; 검색 결과: {filteredPosts.length}개
+              </span>
+            )}
+            {activeTag && (
+              <Badge variant="outline" className="gap-1 cursor-pointer" onClick={clearTagFilter}>
+                #{activeTag}
+                <X className="h-3 w-3" />
+              </Badge>
+            )}
           </div>
         )}
 
