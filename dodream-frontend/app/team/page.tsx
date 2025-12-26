@@ -1,6 +1,12 @@
+import { Metadata } from "next";
 import { BlogHeader } from "@/components/blog-header";
 import { Github } from "lucide-react";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Team",
+  description: "Do x Dream 팀원 소개 - 함께 성장하는 10명의 개발자들",
+};
 
 const teamMembers = [
   { name: "김규민", role: "Frontend", github: "https://github.com/secgyu" },

@@ -1,4 +1,10 @@
+import { Metadata } from "next";
 import { BlogHeader } from "@/components/blog-header";
+
+export const metadata: Metadata = {
+  title: "About",
+  description: "Do x Dream 팀 소개 - 기술을 통해 꿈을 실현하는 개발자들의 모임입니다.",
+};
 
 export default function AboutPage() {
   return (

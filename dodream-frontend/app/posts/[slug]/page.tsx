@@ -20,14 +20,29 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
   const post = getPostBySlug(slug);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://dodream.dev";
 
   if (!post) {
     return { title: "포스트를 찾을 수 없습니다" };
   }
 
   return {
-    title: `${post.title} | Do x Dream`,
+    title: post.title,
     description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: "article",
+      url: `${siteUrl}/posts/${post.slug}`,
+      publishedTime: post.date,
+      authors: [post.author],
+      tags: post.tags,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+    },
   };
 }
 
