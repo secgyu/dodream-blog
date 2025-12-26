@@ -2,20 +2,30 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { useAuth } from "@/lib/auth-context";
 import { BlogHeader } from "@/components/blog-header";
 import { TagInput } from "@/components/tag-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { getAllTags } from "@/lib/posts";
 import { CATEGORIES, SUB_CATEGORIES } from "@/lib/constants";
+
+const NovelEditor = dynamic(() => import("@/components/novel-editor").then((mod) => mod.NovelEditor), {
+  ssr: false,
+  loading: () => (
+    <div className="min-h-[500px] w-full border border-border rounded-lg bg-card flex items-center justify-center">
+      <p className="text-muted-foreground">에디터 로딩중...</p>
+    </div>
+  ),
+});
 
 export default function WritePage() {
   const { user } = useAuth();
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState(user?.name || "");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState<string>("");
   const [subCategory, setSubCategory] = useState<string>("");
@@ -39,6 +49,8 @@ export default function WritePage() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    console.log("저장할 마크다운:", content);
+
     await new Promise((resolve) => setTimeout(resolve, 500));
     alert("데모 버전입니다. 글이 저장되지 않습니다.");
     router.push("/");
@@ -53,7 +65,7 @@ export default function WritePage() {
   return (
     <div className="min-h-screen bg-background">
       <BlogHeader />
-      <main className="mx-auto max-w-3xl px-6 py-12">
+      <main className="mx-auto max-w-4xl px-6 py-12">
         <h1 className="text-2xl font-medium text-foreground mb-8">새 글 작성</h1>
 
         <form onSubmit={handleSubmit} className="space-y-8">
@@ -66,6 +78,17 @@ export default function WritePage() {
               required
               placeholder="글 제목을 입력하세요"
               className="text-lg h-12"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="author">작성자</Label>
+            <Input
+              id="author"
+              value={author}
+              onChange={(e) => setAuthor(e.target.value)}
+              required
+              placeholder="작성자 이름"
             />
           </div>
 
@@ -113,23 +136,20 @@ export default function WritePage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="content">본문</Label>
-            <Textarea
-              id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              required
-              rows={15}
-              placeholder="마크다운 형식으로 작성할 수 있습니다..."
-              className="resize-none"
-            />
+            <Label>본문</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              노션처럼 작성하세요: <code className="bg-muted px-1 rounded">/</code> 명령어,{" "}
+              <code className="bg-muted px-1 rounded">-</code> 리스트, <code className="bg-muted px-1 rounded">##</code>{" "}
+              헤딩
+            </p>
+            <NovelEditor onChange={setContent} />
           </div>
 
           <div className="flex justify-end gap-4">
             <Button type="button" variant="ghost" onClick={() => router.back()}>
               취소
             </Button>
-            <Button type="submit" disabled={isSubmitting || !category || !title}>
+            <Button type="submit" disabled={isSubmitting || !category || !title || !author}>
               {isSubmitting ? "저장 중..." : "발행하기"}
             </Button>
           </div>
