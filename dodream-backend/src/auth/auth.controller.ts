@@ -35,24 +35,20 @@ export class AuthController {
   @ApiOperation({ summary: '로그인' })
   @ApiResponse({ status: 200, description: '로그인 성공' })
   @ApiResponse({ status: 401, description: '인증 실패' })
-  async login(
-    @Body() loginDto: LoginDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const { accessToken, refreshToken } =
-      await this.authService.login(loginDto);
+  login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
+    const { accessToken, refreshToken } = this.authService.login(loginDto);
     const isProduction =
       this.configService.get<string>('app.nodeEnv') === 'production';
     const cookieOptions = this.authService.getCookieOptions(isProduction);
 
     res.cookie('access_token', accessToken, {
       ...cookieOptions,
-      maxAge: 15 * 60 * 1000, // 15분
+      maxAge: 15 * 60 * 1000,
     });
 
     res.cookie('refresh_token', refreshToken, {
       ...cookieOptions,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return { message: '로그인 성공' };
@@ -74,11 +70,11 @@ export class AuthController {
   @ApiOperation({ summary: '토큰 갱신' })
   @ApiResponse({ status: 200, description: '토큰 갱신 성공' })
   @ApiResponse({ status: 401, description: 'Refresh Token 만료' })
-  async refresh(
+  refresh(
     @Req() req: RequestWithUser,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { accessToken, refreshToken } = await this.authService.refresh(
+    const { accessToken, refreshToken } = this.authService.refresh(
       req.user.email,
     );
     const isProduction =

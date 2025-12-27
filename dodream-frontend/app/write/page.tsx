@@ -65,11 +65,8 @@ export default function WritePage() {
     }
   }, [user, authLoading, router]);
 
-  useEffect(() => {
-    if (user?.name && !author) {
-      setAuthor(user.name);
-    }
-  }, [user, author]);
+  const defaultAuthor = user?.name ?? "";
+  const displayAuthor = author || defaultAuthor;
 
   const handleCategoryChange = (newCategory: string) => {
     setCategory(newCategory);
@@ -91,7 +88,7 @@ export default function WritePage() {
       title,
       excerpt,
       content,
-      author,
+      author: displayAuthor,
       category,
       subCategory: subCategory || undefined,
       tags,
@@ -135,7 +132,7 @@ export default function WritePage() {
             <Label htmlFor="author">작성자</Label>
             <Input
               id="author"
-              value={author}
+              value={displayAuthor}
               onChange={(e) => setAuthor(e.target.value)}
               required
               placeholder="작성자 이름"
