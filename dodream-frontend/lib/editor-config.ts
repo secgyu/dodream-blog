@@ -9,11 +9,11 @@ const markdownLinkInputRule = new InputRule({
   handler: ({ state, range, match }) => {
     const [, text, url] = match;
     const { tr } = state;
-    
+
     if (text && url) {
       const start = range.from;
       const end = range.to;
-      
+
       tr.delete(start, end);
       tr.insertText(text, start);
       tr.addMark(
@@ -28,10 +28,10 @@ const markdownLinkInputRule = new InputRule({
 // 마크다운 이미지 문법 ![alt](URL) 자동 변환 InputRule
 const markdownImageInputRule = new InputRule({
   find: /!\[([^\]]*)\]\(([^)]+)\)\s$/,
-  handler: ({ state, range, match, chain }) => {
+  handler: ({ state, range, match }) => {
     const [, alt, src] = match;
     const { tr } = state;
-    
+
     if (src) {
       tr.delete(range.from, range.to);
       const node = state.schema.nodes.image.create({ src, alt: alt || "" });
@@ -52,6 +52,24 @@ const CustomImage = Image.extend({
   addInputRules() {
     return [markdownImageInputRule];
   },
+  // HTML 파싱 시 src, alt, title 속성을 제대로 인식하도록 설정
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      src: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("src"),
+      },
+      alt: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("alt"),
+      },
+      title: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("title"),
+      },
+    };
+  },
 });
 import {
   Heading1,
@@ -63,6 +81,7 @@ import {
   CodeSquare,
   ImageIcon,
   Link as LinkIcon,
+  Upload,
   type LucideIcon,
 } from "lucide-react";
 
@@ -81,7 +100,8 @@ export const suggestionItems: SuggestionItem[] = [
   { title: "번호 매기기", description: "번호 리스트", icon: ListOrdered, command: "orderedList" },
   { title: "인용문", description: "인용 블록", icon: Quote, command: "blockquote" },
   { title: "코드 블록", description: "코드 작성", icon: CodeSquare, command: "codeBlock" },
-  { title: "이미지", description: "이미지 삽입", icon: ImageIcon, command: "image" },
+  { title: "이미지 업로드", description: "파일에서 이미지 업로드", icon: Upload, command: "imageUpload" },
+  { title: "이미지 URL", description: "외부 이미지 URL 삽입", icon: ImageIcon, command: "imageUrl" },
   { title: "링크", description: "링크 삽입", icon: LinkIcon, command: "link" },
 ];
 
@@ -109,6 +129,8 @@ export const editorExtensions = [
     },
   }),
   CustomImage.configure({
+    inline: false,
+    allowBase64: true,
     HTMLAttributes: {
       class: "rounded-lg max-w-full h-auto my-4",
     },

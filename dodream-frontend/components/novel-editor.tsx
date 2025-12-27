@@ -12,7 +12,7 @@ import {
   EditorBubbleItem,
 } from "novel";
 import type { Editor } from "@tiptap/core";
-import { Bold, Italic, Strikethrough, Code, Link as LinkIcon, ImageIcon, Loader2 } from "lucide-react";
+import { Bold, Italic, Strikethrough, Code, Link as LinkIcon, ImageIcon, Upload, Loader2 } from "lucide-react";
 import { suggestionItems, editorExtensions, editorStyles } from "@/lib/editor-config";
 
 interface NovelEditorProps {
@@ -89,10 +89,24 @@ export function NovelEditor({ initialContent, onChange }: NovelEditorProps) {
             </>
           ) : (
             <>
-              <ImageIcon className="h-4 w-4" />
+              <Upload className="h-4 w-4" />
               <span>이미지 업로드</span>
             </>
           )}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            const url = window.prompt("이미지 URL을 입력하세요:");
+            if (url && editorRef.current) {
+              editorRef.current.chain().focus().setImage({ src: url }).run();
+            }
+          }}
+          disabled={isUploading}
+          className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <ImageIcon className="h-4 w-4" />
+          <span>URL로 추가</span>
         </button>
         <span className="text-xs text-muted-foreground">또는 /이미지 명령어 사용</span>
       </div>
@@ -159,10 +173,17 @@ export function NovelEditor({ initialContent, onChange }: NovelEditorProps) {
                       case "codeBlock":
                         editor.chain().focus().deleteRange(range).toggleCodeBlock().run();
                         break;
-                      case "image":
-                        // 슬래시 명령어에서도 파일 업로드 다이얼로그 열기
+                      case "imageUpload":
+                        // 파일 업로드 다이얼로그 열기
                         editor.chain().focus().deleteRange(range).run();
                         triggerFileUpload();
+                        break;
+                      case "imageUrl":
+                        // 외부 이미지 URL 입력
+                        const imageUrl = window.prompt("이미지 URL을 입력하세요:");
+                        if (imageUrl) {
+                          editor.chain().focus().deleteRange(range).setImage({ src: imageUrl }).run();
+                        }
                         break;
                       case "link":
                         const linkUrl = window.prompt("링크 URL을 입력하세요:");
@@ -221,6 +242,17 @@ export function NovelEditor({ initialContent, onChange }: NovelEditorProps) {
               <LinkIcon className="h-4 w-4" />
             </EditorBubbleItem>
             <EditorBubbleItem onSelect={() => triggerFileUpload()} className="p-2 hover:bg-accent">
+              <Upload className="h-4 w-4" />
+            </EditorBubbleItem>
+            <EditorBubbleItem
+              onSelect={(editor) => {
+                const url = window.prompt("이미지 URL을 입력하세요:");
+                if (url) {
+                  editor.chain().focus().setImage({ src: url }).run();
+                }
+              }}
+              className="p-2 hover:bg-accent"
+            >
               <ImageIcon className="h-4 w-4" />
             </EditorBubbleItem>
           </EditorBubble>
