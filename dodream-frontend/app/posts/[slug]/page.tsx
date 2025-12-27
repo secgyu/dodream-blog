@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import { BlogHeader } from "@/components/blog-header";
-import { MarkdownRenderer } from "@/components/markdown-renderer";
+import { HtmlRenderer } from "@/components/html-renderer";
 import { Badge } from "@/components/ui/badge";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
@@ -27,7 +27,7 @@ interface PageProps {
 async function getPostBySlug(slug: string): Promise<Post | null> {
   try {
     const res = await fetch(`${API_BASE_URL}/posts/slug/${slug}`, {
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
     if (!res.ok) return null;
     return res.json();
@@ -39,7 +39,7 @@ async function getPostBySlug(slug: string): Promise<Post | null> {
 async function getAllPosts(): Promise<Post[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/posts`, {
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
     if (!res.ok) return [];
     return res.json();
@@ -128,8 +128,6 @@ export default async function PostPage({ params }: PageProps) {
 
             <h1 className="text-3xl font-bold leading-tight text-foreground mb-4">{post.title}</h1>
 
-            <p className="text-lg text-muted-foreground mb-6">{post.excerpt}</p>
-
             <div className="flex items-center gap-4 text-sm text-muted-foreground border-b border-border pb-6">
               <span>{post.author}</span>
               <span>·</span>
@@ -137,7 +135,7 @@ export default async function PostPage({ params }: PageProps) {
             </div>
           </header>
 
-          <MarkdownRenderer content={post.content} />
+          <HtmlRenderer content={post.content} />
 
           <footer className="mt-12 pt-6 border-t border-border">
             <div className="flex flex-wrap gap-2">

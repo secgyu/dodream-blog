@@ -20,6 +20,13 @@ function formatDate(dateString: string) {
   });
 }
 
+function stripHtml(html: string) {
+  return html
+    .replace(/<[^>]*>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function PostList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -197,7 +204,7 @@ export function PostList() {
                 </h2>
               </Link>
 
-              <p className="mb-4 leading-relaxed text-muted-foreground line-clamp-2">{post.excerpt}</p>
+              <p className="mb-4 leading-relaxed text-muted-foreground line-clamp-2">{stripHtml(post.excerpt)}</p>
 
               <div className="flex flex-wrap gap-2">
                 {post.tags.map((tag) => (

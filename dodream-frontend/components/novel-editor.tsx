@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useEffect } from "react";
 import {
   EditorRoot,
   EditorContent,
@@ -9,9 +10,9 @@ import {
   EditorCommandList,
   EditorBubble,
   EditorBubbleItem,
-  type JSONContent,
 } from "novel";
 import { StarterKit } from "novel";
+import type { Editor } from "@tiptap/core";
 import {
   Bold,
   Italic,
@@ -27,7 +28,7 @@ import {
 } from "lucide-react";
 
 interface NovelEditorProps {
-  initialContent?: JSONContent;
+  initialContent?: string;
   onChange?: (content: string) => void;
 }
 
@@ -59,6 +60,17 @@ const extensions = [
 ];
 
 export function NovelEditor({ initialContent, onChange }: NovelEditorProps) {
+  const editorRef = useRef<Editor | null>(null);
+  const initialContentRef = useRef(initialContent);
+  const hasSetInitialContent = useRef(false);
+
+  useEffect(() => {
+    if (editorRef.current && initialContentRef.current && !hasSetInitialContent.current) {
+      editorRef.current.commands.setContent(initialContentRef.current);
+      hasSetInitialContent.current = true;
+    }
+  }, []);
+
   return (
     <div className="relative min-h-[500px] w-full border border-border rounded-lg bg-card overflow-hidden">
       <style jsx global>{`
@@ -106,11 +118,17 @@ export function NovelEditor({ initialContent, onChange }: NovelEditorProps) {
       <EditorRoot>
         <EditorContent
           extensions={extensions}
-          initialContent={initialContent}
           className="novel-editor p-4 min-h-[500px]"
+          onCreate={({ editor }) => {
+            editorRef.current = editor;
+            if (initialContent) {
+              editor.commands.setContent(initialContent);
+              hasSetInitialContent.current = true;
+            }
+          }}
           onUpdate={({ editor }) => {
-            const text = editor.getText();
-            onChange?.(text);
+            const html = editor.getHTML();
+            onChange?.(html);
           }}
           editorProps={{
             attributes: {
