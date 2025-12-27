@@ -1,0 +1,31 @@
+name: Push to Other Repo
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      # 1) 원본 레포 체크아웃.
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false # GITHUB_TOKEN 정보 초기화
+          fetch-depth: 0
+
+      # 2) 다른 레포지토리에 푸시
+      - name: Push to other repo
+        uses: ad-m/github-push-action@master
+        with:
+          # 타깃 레포지토리(“owner/name”)
+          repository: secgyu/dodream-blog
+          # 푸시할 브랜치
+          branch: main
+          # secrets에 저장한 Personal Access Token
+          github_token: ${{ secrets.AUTO_ACTIONS }}
