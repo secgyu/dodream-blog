@@ -1,6 +1,58 @@
 import { StarterKit } from "novel";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
+import { InputRule } from "@tiptap/core";
+
+// 마크다운 링크 문법 [텍스트](URL) 자동 변환 InputRule
+const markdownLinkInputRule = new InputRule({
+  find: /\[([^\]]+)\]\(([^)]+)\)\s$/,
+  handler: ({ state, range, match }) => {
+    const [, text, url] = match;
+    const { tr } = state;
+    
+    if (text && url) {
+      const start = range.from;
+      const end = range.to;
+      
+      tr.delete(start, end);
+      tr.insertText(text, start);
+      tr.addMark(
+        start,
+        start + text.length,
+        state.schema.marks.link.create({ href: url })
+      );
+    }
+  },
+});
+
+// 마크다운 이미지 문법 ![alt](URL) 자동 변환 InputRule
+const markdownImageInputRule = new InputRule({
+  find: /!\[([^\]]*)\]\(([^)]+)\)\s$/,
+  handler: ({ state, range, match, chain }) => {
+    const [, alt, src] = match;
+    const { tr } = state;
+    
+    if (src) {
+      tr.delete(range.from, range.to);
+      const node = state.schema.nodes.image.create({ src, alt: alt || "" });
+      tr.insert(range.from, node);
+    }
+  },
+});
+
+// Link 확장에 마크다운 InputRule 추가
+const CustomLink = Link.extend({
+  addInputRules() {
+    return [markdownLinkInputRule];
+  },
+});
+
+// Image 확장에 마크다운 InputRule 추가  
+const CustomImage = Image.extend({
+  addInputRules() {
+    return [markdownImageInputRule];
+  },
+});
 import {
   Heading1,
   Heading2,
@@ -48,13 +100,15 @@ export const editorExtensions = [
       levels: [1, 2, 3],
     },
   }),
-  Link.configure({
+  CustomLink.configure({
     openOnClick: false,
+    autolink: true,
+    linkOnPaste: true,
     HTMLAttributes: {
       class: "text-primary underline underline-offset-4 hover:text-primary/80 cursor-pointer",
     },
   }),
-  Image.configure({
+  CustomImage.configure({
     HTMLAttributes: {
       class: "rounded-lg max-w-full h-auto my-4",
     },
