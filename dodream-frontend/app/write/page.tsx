@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
 import { BlogHeader } from "@/components/blog-header";
 import { TagInput } from "@/components/tag-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getAllTags } from "@/lib/posts";
+import { api } from "@/lib/api";
 import { CATEGORIES, SUB_CATEGORIES } from "@/lib/constants";
 
 const NovelEditor = dynamic(() => import("@/components/novel-editor").then((mod) => mod.NovelEditor), {
@@ -21,24 +22,54 @@ const NovelEditor = dynamic(() => import("@/components/novel-editor").then((mod)
   ),
 });
 
+function generateSlug(title: string) {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9가-힣\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .trim();
+}
+
 export default function WritePage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
+  const queryClient = useQueryClient();
+
   const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState(user?.name || "");
+  const [author, setAuthor] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState<string>("");
   const [subCategory, setSubCategory] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const existingTags = getAllTags();
+  const { data: existingTags = [] } = useQuery({
+    queryKey: ["tags"],
+    queryFn: api.posts.getTags,
+  });
+
+  const createPostMutation = useMutation({
+    mutationFn: api.posts.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      router.push("/");
+    },
+    onError: (error) => {
+      alert(`글 저장에 실패했습니다: ${error.message}`);
+    },
+  });
 
   useEffect(() => {
-    if (!user) {
+    if (!authLoading && !user) {
       router.push("/admin");
     }
-  }, [user, router]);
+  }, [user, authLoading, router]);
+
+  useEffect(() => {
+    if (user?.name && !author) {
+      setAuthor(user.name);
+    }
+  }, [user, author]);
 
   const handleCategoryChange = (newCategory: string) => {
     setCategory(newCategory);
@@ -47,14 +78,33 @@ export default function WritePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
 
-    console.log("저장할 마크다운:", content);
+    const slug = generateSlug(title) + "-" + Date.now().toString(36);
+    const excerpt =
+      content
+        .slice(0, 200)
+        .replace(/[#*`\n]/g, "")
+        .trim() + "...";
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    alert("데모 버전입니다. 글이 저장되지 않습니다.");
-    router.push("/");
+    createPostMutation.mutate({
+      slug,
+      title,
+      excerpt,
+      content,
+      author,
+      category,
+      subCategory: subCategory || undefined,
+      tags,
+    });
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">로딩 중...</p>
+      </div>
+    );
+  }
 
   if (!user) {
     return null;
@@ -149,13 +199,11 @@ export default function WritePage() {
             <Button type="button" variant="ghost" onClick={() => router.back()}>
               취소
             </Button>
-            <Button type="submit" disabled={isSubmitting || !category || !title || !author}>
-              {isSubmitting ? "저장 중..." : "발행하기"}
+            <Button type="submit" disabled={createPostMutation.isPending || !category || !title || !author || !content}>
+              {createPostMutation.isPending ? "저장 중..." : "발행하기"}
             </Button>
           </div>
         </form>
-
-        <p className="mt-8 text-center text-xs text-muted-foreground">* 데모 버전: 글이 실제로 저장되지 않습니다</p>
       </main>
     </div>
   );

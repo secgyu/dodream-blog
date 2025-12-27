@@ -2,13 +2,23 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, X, Search } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronLeft, ChevronRight, X, Search, Loader2 } from "lucide-react";
 import { CategorySidebar } from "./category-sidebar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { posts } from "@/lib/posts";
+import { api, type PostResponse } from "@/lib/api";
 import { SUB_CATEGORIES, POSTS_PER_PAGE } from "@/lib/constants";
+
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
 
 export function PostList() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -17,7 +27,16 @@ export function PostList() {
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredPosts = posts.filter((post) => {
+  const {
+    data: posts = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["posts"],
+    queryFn: api.posts.getAll,
+  });
+
+  const filteredPosts = posts.filter((post: PostResponse) => {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       const matchTitle = post.title.toLowerCase().includes(query);
@@ -64,6 +83,18 @@ export function PostList() {
   };
 
   const currentSubCategories = activeCategory ? SUB_CATEGORIES[activeCategory] || [] : [];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="py-12 text-center text-muted-foreground">게시글을 불러오는데 실패했습니다.</div>;
+  }
 
   return (
     <div className="flex gap-12">
@@ -155,7 +186,7 @@ export function PostList() {
           {currentPosts.map((post) => (
             <article key={post.slug} className="py-8 first:pt-0">
               <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
-                <time>{post.date}</time>
+                <time>{formatDate(post.createdAt)}</time>
                 <span>·</span>
                 <span>{post.author}</span>
               </div>

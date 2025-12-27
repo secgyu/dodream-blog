@@ -1,17 +1,64 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getPostBySlug, getAllPosts } from "@/lib/posts";
 import { notFound } from "next/navigation";
 import { BlogHeader } from "@/components/blog-header";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { Badge } from "@/components/ui/badge";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+
+interface Post {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  author: string;
+  category: string;
+  subCategory: string;
+  tags: string[];
+  createdAt: string;
+}
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+async function getPostBySlug(slug: string): Promise<Post | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/posts/slug/${slug}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+async function getAllPosts(): Promise<Post[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/posts`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 export async function generateStaticParams() {
-  const posts = getAllPosts();
+  const posts = await getAllPosts();
   return posts.map((post) => ({
     slug: post.slug,
   }));
@@ -19,7 +66,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const post = await getPostBySlug(slug);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://dodream.dev";
 
   if (!post) {
@@ -34,7 +81,7 @@ export async function generateMetadata({ params }: PageProps) {
       description: post.excerpt,
       type: "article",
       url: `${siteUrl}/posts/${post.slug}`,
-      publishedTime: post.date,
+      publishedTime: post.createdAt,
       authors: [post.author],
       tags: post.tags,
     },
@@ -48,7 +95,7 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function PostPage({ params }: PageProps) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const post = await getPostBySlug(slug);
 
   if (!post) {
     notFound();
@@ -86,7 +133,7 @@ export default async function PostPage({ params }: PageProps) {
             <div className="flex items-center gap-4 text-sm text-muted-foreground border-b border-border pb-6">
               <span>{post.author}</span>
               <span>·</span>
-              <time>{post.date}</time>
+              <time>{formatDate(post.createdAt)}</time>
             </div>
           </header>
 
